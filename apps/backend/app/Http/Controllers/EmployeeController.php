@@ -14,7 +14,7 @@ class EmployeeController extends Controller
     {
         try {
             $employees = Employee::all();
-            return response()->json($employees);
+            return response()->json($employees, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while fetching employees.',
@@ -40,9 +40,9 @@ class EmployeeController extends Controller
                 'salary' => 'nullable|numeric',
             ]);
 
-            $employee = Employee::create($validatedData);
+            $employees = Employee::create($validatedData);
 
-            return response()->json($employee, 201);
+            return response()->json($employees, 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while saving employee.',
@@ -58,6 +58,8 @@ class EmployeeController extends Controller
     public function show(string $id)
     {
         try {
+            $employee = Employee::findOrFail($id);
+            return response()->json($employee, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while fetching employees.',
@@ -73,9 +75,22 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id)
     {
         try {
+            $employee = Employee::findOrFail($id);
+            $validatedData = $request->validate([
+                'last_name' => 'required|string|max:100',
+                'first_name' => 'required|string|max:100',
+                'gender' => 'nullable|string|max:10',
+                'birthday' => 'nullable|date',
+                'date_hired' => 'required|date',
+                'salary' => 'nullable|numeric',
+            ]);
+
+            $employee->update($validatedData);
+
+            return response()->json($employee, 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred while fetching employees.',
+                'message' => 'An error occurred while updating employees.',
                 'error' => $e->getMessage(),
             ], 500);
             //
@@ -88,9 +103,15 @@ class EmployeeController extends Controller
     public function destroy(string $id)
     {
         try {
+            $employee = Employee::findOrFail($id);
+            $employee->delete();
+            return response()->json([
+                'message' => 'Employee deleted successfully.',
+                'employee_id' => $id,
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred while fetching employees.',
+                'message' => 'An error occurred while deleting employee.',
                 'error' => $e->getMessage(),
             ], 500);
             //
